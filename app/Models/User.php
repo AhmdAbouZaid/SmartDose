@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -44,5 +43,29 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /*------------------------------------
+     |         Relations Added
+     ------------------------------------*/
+
+    // User → hasMany Orders
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    // User → hasMany Payments (OPTIONAL)
+    // Payments مرتبطة بالأوردر أصلاً، بس ممكن نحتاجها للوصول السريع
+    public function payments()
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            Order::class,
+            'user_id',     // Foreign key on orders table
+            'order_id',    // Foreign key on payments table
+            'id',          // Local key on users table
+            'id'           // Local key on orders table
+        );
     }
 }
