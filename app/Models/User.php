@@ -54,6 +54,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+    
 
     // User → hasMany Payments (OPTIONAL)
     // Payments مرتبطة بالأوردر أصلاً، بس ممكن نحتاجها للوصول السريع
