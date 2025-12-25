@@ -12,7 +12,11 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'status',
-        'total',   // مطابق للـ migration
+        'total',
+    ];
+
+    protected $casts = [
+        'total' => 'decimal:2',
     ];
 
     /*------------------------------------
@@ -25,7 +29,13 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Order → hasMany Payments
+    // Order → hasOne Payment (order has one payment, not many)
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+    // Order → hasMany Payments (backup relation if you need history)
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -35,5 +45,70 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /*------------------------------------
+     |        Status Check Methods
+     ------------------------------------*/
+
+    // Check if order is pending
+    public function isPending()
+    {
+        return $this->status === 'pending';
+    }
+
+    // Check if order is completed
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+
+    // Check if order is cancelled
+    public function isCancelled()
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /*------------------------------------
+     |      Status Update Methods
+     ------------------------------------*/
+
+    // Mark order as completed
+    public function markAsCompleted()
+    {
+        $this->status = 'completed';
+        $this->save();
+    }
+
+    // Mark order as cancelled
+    public function markAsCancelled()
+    {
+        $this->status = 'cancelled';
+        $this->save();
+    }
+
+    // Mark order as pending
+    public function markAsPending()
+    {
+        $this->status = 'pending';
+        $this->save();
+    }
+
+    /*------------------------------------
+     |         Helper Methods
+     ------------------------------------*/
+
+    // Calculate total from items (in case you need to recalculate)
+    public function calculateTotal()
+    {
+        return $this->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+    }
+
+    // Get total items count
+    public function getTotalItemsCount()
+    {
+        return $this->items->sum('quantity');
     }
 }

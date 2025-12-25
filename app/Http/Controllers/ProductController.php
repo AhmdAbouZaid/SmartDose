@@ -12,7 +12,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->paginate(15);
+        $products = Product::latest()->paginate(12);
+
+        
         
         return view('products.index', compact('products'));
     }
@@ -37,10 +39,10 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
         ]);
 
-        $product = Product::create($validated);
+        Product::create($validated);
 
         return redirect()->route('products.index')
-            ->with('success', 'Product created successfully.');
+            ->with('success', 'Product created successfully!');
     }
 
     /**
@@ -74,7 +76,7 @@ class ProductController extends Controller
         $product->update($validated);
 
         return redirect()->route('products.index')
-            ->with('success', 'Product updated successfully.');
+            ->with('success', 'Product updated successfully!');
     }
 
     /**
@@ -85,6 +87,6 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully.');
+            ->with('success', 'Product deleted successfully!');
     }
 }
