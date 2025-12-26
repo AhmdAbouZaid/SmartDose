@@ -14,6 +14,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
+        'image', // ✅ Add image to fillable
     ];
 
     protected $casts = [
@@ -21,19 +22,33 @@ class Product extends Model
         'stock' => 'integer',
     ];
 
-    // Relationship: Product has many OrderItems
+    /*------------------------------------
+     |         Relations
+     ------------------------------------*/
+
+    /**
+     * Product has many OrderItems
+     */
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    // Check if product is in stock
+    /*------------------------------------
+     |      Stock Check Methods
+     ------------------------------------*/
+
+    /**
+     * Check if product is in stock
+     */
     public function inStock()
     {
         return $this->stock > 0;
     }
 
-    // Decrease stock when ordered
+    /**
+     * Decrease stock when ordered
+     */
     public function decreaseStock($quantity)
     {
         if ($this->stock >= $quantity) {
@@ -44,10 +59,36 @@ class Product extends Model
         return false;
     }
 
-    // Increase stock when order cancelled
+    /**
+     * Increase stock when order cancelled
+     */
     public function increaseStock($quantity)
     {
         $this->stock += $quantity;
         $this->save();
+    }
+
+    /*------------------------------------
+     |       Image Helper Methods
+     ------------------------------------*/
+
+    /**
+     * Get full image URL
+     */
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+        // Return placeholder if no image
+        return asset('images/placeholder-product.png');
+    }
+
+    /**
+     * Check if product has image
+     */
+    public function hasImage()
+    {
+        return !is_null($this->image) && !empty($this->image);
     }
 }

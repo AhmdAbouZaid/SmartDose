@@ -8,24 +8,20 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var list<string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -34,8 +30,6 @@ class User extends Authenticatable
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
@@ -46,18 +40,20 @@ class User extends Authenticatable
     }
 
     /*------------------------------------
-     |         Relations Added
+     |         Relations
      ------------------------------------*/
 
-    // User → hasMany Orders
+    /**
+     * Get all orders for the user.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
-    
 
-    // User → hasMany Payments (OPTIONAL)
-    // Payments مرتبطة بالأوردر أصلاً، بس ممكن نحتاجها للوصول السريع
+    /**
+     * Get all payments through orders.
+     */
     public function payments()
     {
         return $this->hasManyThrough(
@@ -68,5 +64,25 @@ class User extends Authenticatable
             'id',          // Local key on users table
             'id'           // Local key on orders table
         );
+    }
+
+    /*------------------------------------
+     |       Role Check Methods
+     ------------------------------------*/
+
+    /**
+     * Check if user is admin.
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is regular user.
+     */
+    public function isUser()
+    {
+        return $this->role === 'user';
     }
 }
