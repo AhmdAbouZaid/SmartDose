@@ -101,14 +101,12 @@
                                     </a>
                                 @endif
                                 
-                                @auth
-                                    @if(Auth::user()->isAdmin())
-                                        <a href="{{ route('products.edit', $product) }}" 
-                                           class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
-                                            Edit Product
-                                        </a>
-                                    @endif
-                                @endauth
+                                @can('update', $product)
+                                    <a href="{{ route('products.edit', $product) }}" 
+                                       class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                                        Edit Product
+                                    </a>
+                                @endcan
                             </div>
                         </div>
                     </div>

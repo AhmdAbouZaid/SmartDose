@@ -6,10 +6,6 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-2">
-                        {{-- Uncomment this line when you add your logo image --}}
-                        {{-- <img src="{{ asset('images/logo.png') }}" alt="SmartDose Logo" class="h-10 w-auto"> --}}
-                        
-                        {{-- Current: Text Logo with Icon --}}
                         <div class="flex items-center space-x-2">
                             <div class="bg-gradient-to-r from-blue-600 to-cyan-400 p-2 rounded-lg">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,13 +25,25 @@
                         Dashboard
                     </x-nav-link>
                     
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                        Products
-                    </x-nav-link>
-                    
-                    <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
-                        Orders
-                    </x-nav-link>
+                    @if(Auth::user()->isAdmin())
+                        <!-- Admin Menu -->
+                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                            Products
+                        </x-nav-link>
+                        
+                        <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                            All Orders
+                        </x-nav-link>
+                    @else
+                        <!-- User Menu -->
+                        <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                            Shop Smart Dispenser
+                        </x-nav-link>
+                        
+                        <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                            My Orders
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -48,7 +56,12 @@
                                 <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 </div>
-                                <span>{{ Auth::user()->name }}</span>
+                                <div class="text-left">
+                                    <span class="block">{{ Auth::user()->name }}</span>
+                                    @if(Auth::user()->isAdmin())
+                                        <span class="block text-xs text-blue-600 font-semibold">Admin</span>
+                                    @endif
+                                </div>
                             </div>
 
                             <div class="ms-1">
@@ -107,13 +120,23 @@
                 Dashboard
             </x-responsive-nav-link>
             
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                Products
-            </x-responsive-nav-link>
-            
-            <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
-                Orders
-            </x-responsive-nav-link>
+            @if(Auth::user()->isAdmin())
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                    Products
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                    All Orders
+                </x-responsive-nav-link>
+            @else
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                    Shop Smart Dispenser
+                </x-responsive-nav-link>
+                
+                <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                    My Orders
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
@@ -123,7 +146,12 @@
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
                 <div>
-                    <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-base text-gray-800">
+                        {{ Auth::user()->name }}
+                        @if(Auth::user()->isAdmin())
+                            <span class="text-xs text-blue-600 font-semibold">(Admin)</span>
+                        @endif
+                    </div>
                     <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
                 </div>
             </div>

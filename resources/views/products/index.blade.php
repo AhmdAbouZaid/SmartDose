@@ -4,17 +4,15 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Products
             </h2>
-            @auth
-                @if(Auth::user()->isAdmin())
-                    <a href="{{ route('products.create') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-400 text-white rounded-lg font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Add Product
-                    </a>
-                @endif
-            @endauth
+            @can('create', App\Models\Product::class)
+                <a href="{{ route('products.create') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-400 text-white rounded-lg font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Product
+                </a>
+            @endcan
         </div>
     </x-slot>
 
