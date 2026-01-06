@@ -14,7 +14,7 @@
                         Welcome back, {{ Auth::user()->name }}! 👋
                     </h3>
                     <p class="opacity-90">
-                        @if(Auth::user()->isAdmin())
+                        @if(Auth::user()->role === 'admin')
                             You're logged in as Administrator
                         @else
                             Manage your Smart Pill Dispenser orders
@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            @if(Auth::user()->isAdmin())
+            @if(Auth::user()->role === 'admin')
                 <!-- ═══════════════════════════════════════════════════ -->
                 <!--              ADMIN DASHBOARD                        -->
                 <!-- ═══════════════════════════════════════════════════ -->
@@ -87,7 +87,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm text-gray-600">Total Revenue</p>
-                                    <p class="text-3xl font-bold text-purple-600">{{ number_format(\App\Models\Order::where('status', 'completed')->sum('total'), 2) }} EGP</p>
+                                    <p class="text-2xl font-bold text-purple-600">{{ number_format(\App\Models\Order::where('status', 'completed')->sum('total'), 2) }} EGP</p>
                                 </div>
                                 <div class="bg-purple-100 p-3 rounded-full">
                                     <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

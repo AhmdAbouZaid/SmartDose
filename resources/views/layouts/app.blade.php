@@ -12,7 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-['Poppins'] antialiased">
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50 flex flex-col">
         @include('layouts.navigation')
         
         <!-- Page Heading -->
@@ -25,9 +25,19 @@
         @endisset
         
         <!-- Page Content -->
-        <main>
+        <main class="flex-grow">
             {{ $slot }}
         </main>
+
+        <!-- Footer -->
+        <footer class="bg-gradient-to-r from-blue-600 to-cyan-400 text-white py-8 mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-lg font-semibold">© 2025 SmartDose. All rights reserved.</p>
+                    <p class="text-sm mt-2 opacity-90">Made with ❤️ by Arywan</p>
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 </html>
