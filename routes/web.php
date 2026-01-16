@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
     
     // Admin-only product management
-    Route::middleware('Admin')->group(function () {
+    Route::middleware('admin')->group(function () {
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
         Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
@@ -53,6 +53,7 @@ Route::middleware('auth')->controller(OrderController::class)->group(function ()
     Route::post('/orders', 'store')->name('orders.store');
     Route::get('/orders/{order}', 'show')->name('orders.show');
     Route::post('/orders/{order}/cancel', 'cancel')->name('orders.cancel');
+    Route::post('/orders/{order}/confirm-delivery', 'confirmDelivery')->name('orders.confirm-delivery');
 });
 
 // Payments Routes (Authenticated Users)

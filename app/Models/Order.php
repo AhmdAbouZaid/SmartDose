@@ -13,10 +13,12 @@ class Order extends Model
         'user_id',
         'status',
         'total',
+        'delivered_at',
     ];
 
     protected $casts = [
         'total' => 'decimal:2',
+        'delivered_at' => 'datetime',
     ];
 
     /*------------------------------------
@@ -110,5 +112,18 @@ class Order extends Model
     public function getTotalItemsCount()
     {
         return $this->items->sum('quantity');
+    }
+
+    // Mark order as delivered (user confirmed)
+    public function markAsDelivered()
+    {
+        $this->delivered_at = now();
+        $this->save();
+    }
+
+    // Check if order is delivered
+    public function isDelivered()
+    {
+        return !is_null($this->delivered_at);
     }
 }

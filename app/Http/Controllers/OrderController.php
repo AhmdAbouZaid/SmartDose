@@ -151,4 +151,31 @@ class OrderController extends Controller
             return back()->with('error', 'Failed to cancel order.');
         }
     }
+
+    /**
+     * Confirm delivery by user.
+     */
+    public function confirmDelivery(Order $order)
+    {
+        // Make sure user owns this order
+        if ($order->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Only completed orders can be confirmed
+        if (!$order->isCompleted()) {
+            return back()->with('error', 'Only completed orders can be confirmed.');
+        }
+
+        // Check if already confirmed
+        if ($order->isDelivered()) {
+            return back()->with('error', 'Order already confirmed as delivered.');
+        }
+
+        // Mark as delivered
+        $order->markAsDelivered();
+
+        return redirect()->route('orders.index')
+            ->with('success', 'Thank you for confirming delivery!');
+    }
 }

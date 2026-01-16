@@ -51,10 +51,10 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order ID
-                                    </th>
                                     @if(Auth::user()->isAdmin())
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order ID
+                                        </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Customer
                                         </th>
@@ -79,12 +79,12 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($orders as $order)
                                     <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                #{{ $order->id }}
-                                            </div>
-                                        </td>
                                         @if(Auth::user()->isAdmin())
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    #{{ $order->id }}
+                                                </div>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">{{ $order->user->name }}</div>
                                                 <div class="text-sm text-gray-500">{{ $order->user->email }}</div>
@@ -118,10 +118,23 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('orders.show', $order) }}" 
-                                               class="text-blue-600 hover:text-blue-900 font-medium">
-                                                View Details
-                                            </a>
+                                            <div class="flex items-center justify-end space-x-2">
+                                                <a href="{{ route('orders.show', $order) }}" 
+                                                   class="text-blue-600 hover:text-blue-900 font-medium">
+                                                    View Details
+                                                </a>
+                                                
+                                                @if(!Auth::user()->isAdmin() && $order->isCompleted() && !$order->delivered_at)
+                                                    <form action="{{ route('orders.confirm-delivery', $order) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" 
+                                                                onclick="return confirm('Confirm that you have received this order?')"
+                                                                class="text-green-600 hover:text-green-900 font-medium">
+                                                            Confirm Delivery
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
