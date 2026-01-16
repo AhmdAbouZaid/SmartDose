@@ -11,11 +11,12 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="font-['Poppins'] antialiased">
     <div class="min-h-screen bg-gray-50 flex flex-col">
         @include('layouts.navigation')
         
-        <!-- Page Heading -->
+        {{-- Page Heading --}}
         @isset($header)
             <header class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -24,17 +25,53 @@
             </header>
         @endisset
         
-        <!-- Page Content -->
+        {{-- Page Content --}}
         <main class="flex-grow">
             {{ $slot }}
         </main>
 
-        <!-- Footer -->
-        <footer class="bg-gradient-to-r from-blue-600 to-cyan-400 text-white py-8 mt-12">
+        {{-- Footer --}}
+        <footer class="bg-gradient-to-r from-blue-600 to-cyan-400 text-white py-10 mt-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <p class="text-lg font-semibold">© 2025 SmartDose. All rights reserved.</p>
-                    <p class="text-sm mt-2 opacity-90">Made with ❤️ by Arywan</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                    
+                    {{-- Brand --}}
+                    <div>
+                        <h3 class="text-xl font-bold">SmartDose</h3>
+                        <p class="text-sm mt-2 opacity-90">
+                            Smart medication management for a healthier life.
+                        </p>
+                    </div>
+
+                    {{-- Links --}}
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li>
+                                <a href="{{ route('about') }}" class="hover:underline opacity-90 hover:opacity-100">
+                                    About Us
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('contact') }}" class="hover:underline opacity-90 hover:opacity-100">
+                                    Contact Us
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {{-- Contact --}}
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3">Contact</h4>
+                        <p class="text-sm opacity-90">Email: support@smartdose.com</p>
+                        <p class="text-sm opacity-90 mt-1">Phone: +20 100 000 0000</p>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/30 mt-8 pt-6 text-center text-sm opacity-90">
+                    © {{ now()->year }} SmartDose. All rights reserved.
+                    <span class="block mt-1">Made by Arywan</span>
                 </div>
             </div>
         </footer>
