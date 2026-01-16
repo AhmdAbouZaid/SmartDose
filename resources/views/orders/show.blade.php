@@ -10,7 +10,11 @@
                 </a>
                 <div>
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        Order #{{ $order->id }}
+                        @if(Auth::user()->isAdmin())
+                            Order #{{ $order->id }}
+                        @else
+                            My Order
+                        @endif
                     </h2>
                     <p class="text-sm text-gray-600">
                         Placed on {{ $order->created_at->format('M d, Y \a\t h:i A') }}
@@ -223,10 +227,12 @@
                                 </div>
 
                                 @if($order->payment->transaction_id)
-                                    <div>
-                                        <p class="text-sm text-gray-600">Transaction ID</p>
-                                        <p class="font-mono text-sm text-gray-900">{{ $order->payment->transaction_id }}</p>
-                                    </div>
+                                    @if(Auth::user()->isAdmin())
+                                        <div>
+                                            <p class="text-sm text-gray-600">Transaction ID</p>
+                                            <p class="font-mono text-sm text-gray-900">{{ $order->payment->transaction_id }}</p>
+                                        </div>
+                                    @endif
                                 @endif
 
                                 <a href="{{ route('payments.show', $order->payment) }}" 
@@ -239,14 +245,41 @@
                         @if($order->isPending())
                             <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                                 <div class="p-6">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Choose Payment Method</h3>
+                                    
                                     <form action="{{ route('payments.store') }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="order_id" value="{{ $order->id }}">
-                                        <input type="hidden" name="payment_method" value="paypal">
+                                        
+                                        <div class="space-y-3 mb-6">
+                                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 transition">
+                                                <input type="radio" name="payment_method" value="cod" class="w-4 h-4 text-blue-600" checked>
+                                                <div class="ml-3">
+                                                    <p class="font-semibold text-gray-900">Cash on Delivery</p>
+                                                    <p class="text-sm text-gray-600">Pay when you receive your order</p>
+                                                </div>
+                                            </label>
+                                            
+                                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 transition opacity-50">
+                                                <input type="radio" name="payment_method" value="paypal" class="w-4 h-4 text-blue-600" disabled>
+                                                <div class="ml-3">
+                                                    <p class="font-semibold text-gray-900">PayPal</p>
+                                                    <p class="text-sm text-gray-600">Coming soon</p>
+                                                </div>
+                                            </label>
+                                            
+                                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 transition opacity-50">
+                                                <input type="radio" name="payment_method" value="card" class="w-4 h-4 text-blue-600" disabled>
+                                                <div class="ml-3">
+                                                    <p class="font-semibold text-gray-900">Credit/Debit Card</p>
+                                                    <p class="text-sm text-gray-600">Coming soon</p>
+                                                </div>
+                                            </label>
+                                        </div>
                                         
                                         <button type="submit" 
                                                 class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-400 text-white rounded-lg font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                                            Proceed to Payment
+                                            Confirm Order
                                         </button>
                                     </form>
                                 </div>

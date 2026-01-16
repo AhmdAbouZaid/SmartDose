@@ -1,13 +1,11 @@
 <?php
-/**
- * @mixin \Illuminate\Http\Request
- */
+
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
@@ -19,7 +17,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'payment_method' => 'required|string|in:paypal,stripe,card',
+            'payment_method' => 'required|string|in:paypal,stripe,card,cod,cash_on_delivery',
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
@@ -37,7 +35,27 @@ class PaymentController extends Controller
         DB::beginTransaction();
         
         try {
-            // Create payment record
+            // For Cash on Delivery, mark as success immediately
+            if ($validated['payment_method'] === 'cod' || $validated['payment_method'] === 'cash_on_delivery') {
+                $payment = Payment::create([
+                    'order_id' => $order->id,
+                    'amount' => $order->total,
+                    'status' => 'success',
+                    'payment_method' => 'cod',
+                    'payment_gateway' => 'cash_on_delivery',
+                    'transaction_id' => 'COD-' . $order->id . '-' . time(),
+                ]);
+
+                // Mark order as completed
+                $order->markAsCompleted();
+                
+                DB::commit();
+
+                return redirect()->route('orders.show', $order)
+                    ->with('success', 'Order confirmed! Pay cash when you receive your delivery.');
+            }
+
+            // For other payment methods (PayPal, Stripe, etc.)
             $payment = Payment::create([
                 'order_id' => $order->id,
                 'amount' => $order->total,
@@ -48,15 +66,14 @@ class PaymentController extends Controller
 
             DB::commit();
 
-            // Redirect to payment gateway
-            // This will be implemented when we integrate PayPal/Stripe
+            // Redirect to payment gateway (to be implemented)
             return redirect()->route('payments.show', $payment)
                 ->with('success', 'Payment initiated. Please complete the payment.');
                 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            return back()->with('error', 'Failed to initiate payment.');
+            return back()->with('error', 'Failed to process payment: ' . $e->getMessage());
         }
     }
 
@@ -80,9 +97,6 @@ class PaymentController extends Controller
      */
     public function callback(Request $request)
     {
-        // This will be implemented when we integrate PayPal/Stripe
-        // For now, we'll just simulate a successful payment
-        
         $paymentId = $request->input('payment_id');
         $transactionId = $request->input('transaction_id');
         $status = $request->input('status', 'success');
@@ -98,10 +112,7 @@ class PaymentController extends Controller
         
         try {
             if ($status === 'success') {
-                // Mark payment as successful
                 $payment->markAsSuccess($transactionId);
-                
-                // Mark order as completed
                 $payment->order->markAsCompleted();
                 
                 DB::commit();
@@ -109,7 +120,6 @@ class PaymentController extends Controller
                 return redirect()->route('orders.show', $payment->order)
                     ->with('success', 'Payment completed successfully!');
             } else {
-                // Mark payment as failed
                 $payment->markAsFailed();
                 
                 DB::commit();
@@ -131,29 +141,28 @@ class PaymentController extends Controller
      */
     public function refund(Payment $payment)
     {
-        // Make sure user owns this payment
-        if ($payment->order->user_id !== auth()->id()) {
+        // Make sure user owns this payment or is admin
+        if ($payment->order->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Only successful payments can be refunded
-        if (!$payment->isSuccessful()) {
-            return back()->with('error', 'Only successful payments can be refunded.');
+        // Only successful payments can be refunded (not COD)
+        if (!$payment->isSuccessful() || $payment->isCashOnDelivery()) {
+            return back()->with('error', 'This payment cannot be refunded.');
         }
 
         DB::beginTransaction();
         
         try {
-            // Mark payment as refunded
             $payment->markAsRefunded();
-            
-            // Cancel the order
             $payment->order->markAsCancelled();
             
             // Return stock
             foreach ($payment->order->items as $item) {
                 $product = $item->product;
-                $product->increaseStock($item->quantity);
+                if ($product) {
+                    $product->increaseStock($item->quantity);
+                }
             }
 
             DB::commit();

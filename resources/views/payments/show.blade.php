@@ -9,10 +9,18 @@
             </a>
             <div>
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Payment Details
+                    @if(Auth::user()->isAdmin())
+                        Payment Details
+                    @else
+                        Payment Confirmation
+                    @endif
                 </h2>
                 <p class="text-sm text-gray-600">
-                    Payment for Order #{{ $payment->order->id }}
+                    @if(Auth::user()->isAdmin())
+                        Payment for Order #{{ $payment->order->id }}
+                    @else
+                        Order placed successfully
+                    @endif
                 </p>
             </div>
         </div>
@@ -80,7 +88,7 @@
                             <p class="text-2xl font-bold text-gray-900">{{ number_format($payment->amount, 2) }} EGP</p>
                         </div>
 
-                        @if($payment->transaction_id)
+                        @if(Auth::user()->isAdmin() && $payment->transaction_id)
                             <div>
                                 <p class="text-sm text-gray-600">Transaction ID</p>
                                 <p class="font-mono text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded">
@@ -91,19 +99,35 @@
 
                         <div>
                             <p class="text-sm text-gray-600">Payment Method</p>
-                            <p class="font-semibold text-gray-900 capitalize">
-                                {{ $payment->payment_method ?? 'N/A' }}
+                            <p class="font-semibold text-gray-900">
+                                @if($payment->payment_method === 'cod' || $payment->payment_method === 'cash_on_delivery')
+                                    Cash on Delivery
+                                @else
+                                    {{ ucfirst($payment->payment_method ?? 'N/A') }}
+                                @endif
                             </p>
                         </div>
 
-                        @if($payment->payment_gateway)
-                            <div>
-                                <p class="text-sm text-gray-600">Payment Gateway</p>
-                                <p class="font-semibold text-gray-900 capitalize">
-                                    {{ $payment->payment_gateway }}
-                                </p>
-                            </div>
-                        @endif
+                        <div>
+                            <p class="text-sm text-gray-600">
+                                @if(Auth::user()->isAdmin())
+                                    Payment Gateway
+                                @else
+                                    Payment Info
+                                @endif
+                            </p>
+                            <p class="font-semibold text-gray-900">
+                                @if($payment->payment_method === 'cod' || $payment->payment_method === 'cash_on_delivery')
+                                    @if(Auth::user()->isAdmin())
+                                        cash_on_delivery
+                                    @else
+                                        Pay when you receive your order
+                                    @endif
+                                @else
+                                    {{ ucfirst($payment->payment_gateway ?? 'N/A') }}
+                                @endif
+                            </p>
+                        </div>
 
                         <div>
                             <p class="text-sm text-gray-600">Payment Date</p>
@@ -121,10 +145,12 @@
                     </div>
 
                     <div class="p-6 space-y-4">
-                        <div>
-                            <p class="text-sm text-gray-600">Order ID</p>
-                            <p class="font-semibold text-gray-900">#{{ $payment->order->id }}</p>
-                        </div>
+                        @if(Auth::user()->isAdmin())
+                            <div>
+                                <p class="text-sm text-gray-600">Order ID</p>
+                                <p class="font-semibold text-gray-900">#{{ $payment->order->id }}</p>
+                            </div>
+                        @endif
 
                         <div>
                             <p class="text-sm text-gray-600">Order Status</p>

@@ -42,6 +42,12 @@ class Payment extends Model
         return $this->status === 'pending';
     }
 
+    // Check if payment is Cash on Delivery
+    public function isCashOnDelivery()
+    {
+        return $this->payment_method === 'cod' || $this->payment_method === 'cash_on_delivery';
+    }
+
     // Mark payment as success
     public function markAsSuccess($transactionId = null)
     {

@@ -40,6 +40,16 @@
                     <form action="{{ route('orders.store') }}" method="POST" class="p-6" id="orderForm">
                         @csrf
 
+                        @if($errors->any())
+                            <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                                <ul class="list-disc list-inside">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <div class="space-y-4 mb-6" id="productsList">
                             @foreach($products as $index => $product)
                                 <div class="border border-gray-200 rounded-lg p-4 product-item" data-price="{{ $product->price }}" data-stock="{{ $product->stock }}">
@@ -73,11 +83,15 @@
 
                                                 <div class="flex items-center space-x-2">
                                                     <input type="checkbox" 
-                                                           name="items[{{ $index }}][product_id]" 
-                                                           value="{{ $product->id }}"
+                                                           name="items[{{ $index }}][selected]"
+                                                           value="1"
                                                            id="product_{{ $product->id }}"
                                                            class="product-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                                                           onchange="toggleQuantity({{ $product->id }})">
+                                                           onchange="toggleQuantity({{ $product->id }}, {{ $index }})">
+                                                    <input type="hidden" 
+                                                           name="items[{{ $index }}][product_id]" 
+                                                           value="{{ $product->id }}"
+                                                           class="product-id-input">
                                                     <label for="product_{{ $product->id }}" class="text-sm text-gray-700">Select</label>
                                                 </div>
                                             </div>
@@ -135,7 +149,7 @@
     </div>
 
     <script>
-        function toggleQuantity(productId) {
+        function toggleQuantity(productId, index) {
             const checkbox = document.getElementById(`product_${productId}`);
             const quantityDiv = document.getElementById(`quantity_${productId}`);
             
@@ -171,5 +185,25 @@
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = itemCount === 0;
         }
+
+        // Validate form before submission
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            const checkedItems = document.querySelectorAll('.product-checkbox:checked');
+            
+            if (checkedItems.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one product!');
+                return false;
+            }
+            
+            // Remove unchecked items from submission
+            document.querySelectorAll('.product-checkbox:not(:checked)').forEach(checkbox => {
+                const productItem = checkbox.closest('.product-item');
+                const inputs = productItem.querySelectorAll('input[name^="items"]');
+                inputs.forEach(input => input.remove());
+            });
+            
+            return true;
+        });
     </script>
 </x-app-layout>
