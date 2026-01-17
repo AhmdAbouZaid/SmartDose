@@ -15,11 +15,20 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = auth()->user()
-            ->orders()
-            ->with('items.product')
-            ->latest()
-            ->paginate(10);
+        // ✅ FIX: Admin يشوف كل الأوردرات، User يشوف بتوعه بس
+        if (auth()->user()->isAdmin()) {
+            // Admin: كل الأوردرات من كل المستخدمين
+            $orders = Order::with(['user', 'items.product', 'payment'])
+                ->latest()
+                ->paginate(10);
+        } else {
+            // User: أوردراته بس
+            $orders = auth()->user()
+                ->orders()
+                ->with(['items.product', 'payment'])
+                ->latest()
+                ->paginate(10);
+        }
         
         return view('orders.index', compact('orders'));
     }
@@ -103,12 +112,12 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        // Make sure user can only see their own orders
-        if ($order->user_id !== auth()->id()) {
+        // ✅ FIX: Admin يقدر يشوف كل الأوردرات
+        if (!auth()->user()->isAdmin() && $order->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $order->load('items.product', 'payment');
+        $order->load('items.product', 'payment', 'user');
         
         return view('orders.show', compact('order'));
     }
@@ -118,8 +127,8 @@ class OrderController extends Controller
      */
     public function cancel(Order $order)
     {
-        // Make sure user can only cancel their own orders
-        if ($order->user_id !== auth()->id()) {
+        // ✅ FIX: Admin يقدر يلغي أي أوردر
+        if (!auth()->user()->isAdmin() && $order->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
