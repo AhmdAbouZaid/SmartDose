@@ -44,11 +44,10 @@ require __DIR__.'/auth.php';
 
 // Products Routes
 Route::middleware('auth')->group(function () {
-    // Public product browsing (all authenticated users)
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+    // ✅ FIX: Admin routes MUST come before {product} route
+    // Otherwise Laravel thinks "create" and "edit" are product IDs!
     
-    // Admin-only product management
+    // Admin-only product management (MUST BE FIRST)
     Route::middleware('admin')->group(function () {
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -56,6 +55,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });
+    
+    // Public product browsing (all authenticated users) - AFTER admin routes
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 });
 
 // Orders Routes (Authenticated Users)
@@ -70,6 +73,7 @@ Route::middleware('auth')->controller(OrderController::class)->group(function ()
 
 // Payments Routes (Authenticated Users)
 Route::middleware('auth')->controller(PaymentController::class)->group(function () {
+    Route::get('/payments', 'index')->name('payments.index'); 
     Route::post('/payments', 'store')->name('payments.store');
     Route::get('/payments/{payment}', 'show')->name('payments.show');
     Route::post('/payments/callback', 'callback')->name('payments.callback');

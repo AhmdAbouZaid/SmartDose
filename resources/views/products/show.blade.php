@@ -66,30 +66,67 @@
 
                             <!-- Product Info Grid -->
                             <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-sm text-gray-600">Product ID</p>
-                                        <p class="font-semibold text-gray-900">#{{ $product->id }}</p>
+                                @auth
+                                    @if(Auth::user()->isAdmin())
+                                        {{-- Admin View: Show Product ID --}}
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p class="text-sm text-gray-600">Product ID</p>
+                                                <p class="font-semibold text-gray-900">#{{ $product->id }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-600">Stock Status</p>
+                                                <p class="font-semibold text-gray-900">
+                                                    {{ $product->inStock() ? 'Available' : 'Out of Stock' }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-600">Added</p>
+                                                <p class="font-semibold text-gray-900">
+                                                    {{ $product->created_at->format('M d, Y') }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-600">Last Updated</p>
+                                                <p class="font-semibold text-gray-900">
+                                                    {{ $product->updated_at->format('M d, Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @else
+                                        {{-- User View: Hide Product ID --}}
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p class="text-sm text-gray-600">Stock Status</p>
+                                                <p class="font-semibold text-gray-900">
+                                                    {{ $product->inStock() ? 'Available' : 'Out of Stock' }}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-600">Added</p>
+                                                <p class="font-semibold text-gray-900">
+                                                    {{ $product->created_at->format('M d, Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @else
+                                    {{-- Guest View: Hide Product ID --}}
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-600">Stock Status</p>
+                                            <p class="font-semibold text-gray-900">
+                                                {{ $product->inStock() ? 'Available' : 'Out of Stock' }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-600">Added</p>
+                                            <p class="font-semibold text-gray-900">
+                                                {{ $product->created_at->format('M d, Y') }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Stock Status</p>
-                                        <p class="font-semibold text-gray-900">
-                                            {{ $product->inStock() ? 'Available' : 'Out of Stock' }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Added</p>
-                                        <p class="font-semibold text-gray-900">
-                                            {{ $product->created_at->format('M d, Y') }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Last Updated</p>
-                                        <p class="font-semibold text-gray-900">
-                                            {{ $product->updated_at->format('M d, Y') }}
-                                        </p>
-                                    </div>
-                                </div>
+                                @endauth
                             </div>
 
                             <!-- Action Buttons -->
@@ -106,6 +143,20 @@
                                        class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
                                         Edit Product
                                     </a>
+                                @endcan
+
+                                @can('delete', $product)
+                                    <form action="{{ route('products.destroy', $product) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Are you sure you want to delete this product?');"
+                                          class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition">
+                                            Delete Product
+                                        </button>
+                                    </form>
                                 @endcan
                             </div>
                         </div>

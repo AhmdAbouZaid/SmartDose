@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests; // ✅ FIX: Add this trait
+    
     /**
      * Display a listing of the products.
      */
@@ -23,7 +26,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Check authorization
+        // Check authorization (Admin only)
         $this->authorize('create', Product::class);
         
         return view('products.create');
@@ -34,7 +37,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Check authorization
+        // Check authorization (Admin only)
         $this->authorize('create', Product::class);
         
         $validated = $request->validate([
@@ -69,7 +72,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        // Check authorization
+        // Check authorization (Admin only)
         $this->authorize('update', $product);
         
         return view('products.edit', compact('product'));
@@ -80,7 +83,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // Check authorization
+        // Check authorization (Admin only)
         $this->authorize('update', $product);
         
         $validated = $request->validate([
@@ -112,8 +115,14 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Check authorization
+        // Check authorization (Admin only)
         $this->authorize('delete', $product);
+        
+        // ✅ Check if product exists in any orders
+        if ($product->orderItems()->count() > 0) {
+            return redirect()->route('products.index')
+                ->with('error', 'Cannot delete product. It exists in order history.');
+        }
         
         // Delete product image if exists
         if ($product->image) {

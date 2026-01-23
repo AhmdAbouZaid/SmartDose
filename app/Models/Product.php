@@ -14,7 +14,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
-        'image', // ✅ Add image to fillable
+        'image',
     ];
 
     protected $casts = [

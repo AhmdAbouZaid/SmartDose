@@ -2,14 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Order;
-use Illuminate\Http\Request;
+use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
+    /**
+     * Display a listing of payments.
+     */
+    public function index()
+    {
+        if (auth()->user()->isAdmin()) {
+            $payments = Payment::with('order.user')
+                ->latest()
+                ->paginate(20);
+        } else {
+
+            $payments = Payment::whereHas('order', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
+                ->with('order')
+                ->latest()
+                ->paginate(20);
+        }
+
+        return view('payments.index', compact('payments'));
+    }
+
     /**
      * Store a newly created payment.
      */
@@ -33,7 +55,7 @@ class PaymentController extends Controller
         }
 
         DB::beginTransaction();
-        
+
         try {
             // For Cash on Delivery, mark as success immediately
             if ($validated['payment_method'] === 'cod' || $validated['payment_method'] === 'cash_on_delivery') {
@@ -48,10 +70,11 @@ class PaymentController extends Controller
 
                 // Mark order as completed
                 $order->markAsCompleted();
-                
+
                 DB::commit();
 
-                return redirect()->route('orders.show', $order)
+                return redirect()
+                    ->route('orders.show', $order)
                     ->with('success', 'Order confirmed! Pay cash when you receive your delivery.');
             }
 
@@ -67,12 +90,12 @@ class PaymentController extends Controller
             DB::commit();
 
             // Redirect to payment gateway (to be implemented)
-            return redirect()->route('payments.show', $payment)
+            return redirect()
+                ->route('payments.show', $payment)
                 ->with('success', 'Payment initiated. Please complete the payment.');
-                
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return back()->with('error', 'Failed to process payment: ' . $e->getMessage());
         }
     }
@@ -88,7 +111,7 @@ class PaymentController extends Controller
         }
 
         $payment->load('order.items.product');
-        
+
         return view('payments.show', compact('payment'));
     }
 
@@ -102,36 +125,39 @@ class PaymentController extends Controller
         $status = $request->input('status', 'success');
 
         if (!$paymentId) {
-            return redirect()->route('orders.index')
+            return redirect()
+                ->route('orders.index')
                 ->with('error', 'Invalid payment callback.');
         }
 
         $payment = Payment::findOrFail($paymentId);
 
         DB::beginTransaction();
-        
+
         try {
             if ($status === 'success') {
                 $payment->markAsSuccess($transactionId);
                 $payment->order->markAsCompleted();
-                
+
                 DB::commit();
-                
-                return redirect()->route('orders.show', $payment->order)
+
+                return redirect()
+                    ->route('orders.show', $payment->order)
                     ->with('success', 'Payment completed successfully!');
             } else {
                 $payment->markAsFailed();
-                
+
                 DB::commit();
-                
-                return redirect()->route('orders.show', $payment->order)
+
+                return redirect()
+                    ->route('orders.show', $payment->order)
                     ->with('error', 'Payment failed. Please try again.');
             }
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            return redirect()->route('orders.index')
+
+            return redirect()
+                ->route('orders.index')
                 ->with('error', 'Payment processing failed.');
         }
     }
@@ -152,11 +178,11 @@ class PaymentController extends Controller
         }
 
         DB::beginTransaction();
-        
+
         try {
             $payment->markAsRefunded();
             $payment->order->markAsCancelled();
-            
+
             // Return stock
             foreach ($payment->order->items as $item) {
                 $product = $item->product;
@@ -167,12 +193,12 @@ class PaymentController extends Controller
 
             DB::commit();
 
-            return redirect()->route('orders.show', $payment->order)
+            return redirect()
+                ->route('orders.show', $payment->order)
                 ->with('success', 'Payment refunded successfully!');
-                
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return back()->with('error', 'Failed to process refund.');
         }
     }
